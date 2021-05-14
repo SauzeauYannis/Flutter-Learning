@@ -22,6 +22,17 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _unfocusedColor = Colors.grey[600];
+  final _usernameFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _usernameFocusNode.addListener(() => setState(() => null));
+    _passwordFocusNode.addListener(() => setState(() => null));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,36 +46,48 @@ class _LoginPageState extends State<LoginPage> {
               children: <Widget>[
                 Image.asset('assets/diamond.png'),
                 SizedBox(height: 16.0),
-                Text('SHRINE'),
+                Text(
+                  'SHRINE',
+                  style: Theme.of(context).textTheme.headline5,
+                ),
               ],
             ),
             SizedBox(height: 120.0),
-            // TODO: Wrap Username with AccentColorOverride (103)
-            // TODO: Remove filled: true values (103)
-            // TODO: Wrap Password with AccentColorOverride (103)
-            // [Name]
             TextField(
               controller: _usernameController,
+              focusNode: _usernameFocusNode,
               decoration: InputDecoration(
-                border: OutlineInputBorder(),
                 labelText: 'Username',
+                labelStyle: TextStyle(
+                    color: _usernameFocusNode.hasFocus
+                        ? Theme.of(context).accentColor
+                        : _unfocusedColor),
               ),
             ),
-            // spacer
             SizedBox(height: 12.0),
-            // [Password]
             TextField(
               controller: _passwordController,
+              focusNode: _passwordFocusNode,
               obscureText: true,
               decoration: InputDecoration(
-                border: OutlineInputBorder(),
                 labelText: 'Password',
+                labelStyle: TextStyle(
+                    color: _passwordFocusNode.hasFocus
+                        ? Theme.of(context).accentColor
+                        : _unfocusedColor),
               ),
             ),
             ButtonBar(
               children: <Widget>[
                 OutlinedButton(
                   child: Text('CANCEL'),
+                  style: ButtonStyle(
+                    shape: MaterialStateProperty.all(
+                      BeveledRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(7.0)),
+                      ),
+                    ),
+                  ),
                   onPressed: () {
                     _usernameController.clear();
                     _passwordController.clear();
@@ -72,6 +95,12 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 ElevatedButton(
                   child: Text('NEXT'),
+                  style: ElevatedButton.styleFrom(
+                    elevation: 8,
+                    shape: BeveledRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(7)),
+                    ),
+                  ),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -82,5 +111,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
-// TODO: Add AccentColorOverride (103)
