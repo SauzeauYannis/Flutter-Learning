@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -47,13 +48,12 @@ class ReplyRouterDelegate extends RouterDelegate<ReplyRoutePath>
             key: navigatorKey,
             onPopPage: _handlePopPage,
             pages: [
-              // TODO: Add Shared Z-Axis transition from search icon to search view page (Motion)
-              const CustomTransitionPage(
+              const SharedAxisTransitionPageWrapper(
                 transitionKey: ValueKey('Home'),
                 screen: HomePage(),
               ),
               if (routePath is ReplySearchPath)
-                const CustomTransitionPage(
+                const SharedAxisTransitionPageWrapper(
                   transitionKey: ValueKey('Search'),
                   screen: SearchPage(),
                 ),
@@ -97,7 +97,29 @@ class ReplySearchPath extends ReplyRoutePath {
   const ReplySearchPath();
 }
 
-// TODO: Add Shared Z-Axis transition from search icon to search view page (Motion)
+class SharedAxisTransitionPageWrapper extends Page {
+  const SharedAxisTransitionPageWrapper({
+    @required this.screen,
+    @required this.transitionKey,
+  })  : assert(screen != null),
+        assert(transitionKey != null),
+        super(key: transitionKey);
+
+  final Widget screen;
+  final ValueKey transitionKey;
+
+  @override
+  Route createRoute(BuildContext context) => PageRouteBuilder(
+      settings: this,
+      transitionsBuilder: (_, animation, secondaryAnimation, child) =>
+          SharedAxisTransition(
+              fillColor: Theme.of(context).cardColor,
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: SharedAxisTransitionType.scaled,
+              child: child),
+      pageBuilder: (_, __, ___) => screen);
+}
 
 class ReplyRouteInformationParser
     extends RouteInformationParser<ReplyRoutePath> {

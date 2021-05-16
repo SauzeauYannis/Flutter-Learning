@@ -1,7 +1,7 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reply/custom_transition_page.dart';
 
 import 'home.dart';
 import 'inbox.dart';
@@ -26,12 +26,9 @@ class MailViewRouterDelegate extends RouterDelegate<void>
           key: navigatorKey,
           onPopPage: _handlePopPage,
           pages: [
-            // TODO: Add Fade through transition between mailbox pages (Motion)
-            CustomTransitionPage(
+            FadeTroughTransitionPageWrapper(
+              mailbox: InboxPage(destination: currentlySelectedInbox),
               transitionKey: ValueKey(currentlySelectedInbox),
-              screen: InboxPage(
-                destination: currentlySelectedInbox,
-              ),
             )
           ],
         );
@@ -69,11 +66,7 @@ class MailViewRouterDelegate extends RouterDelegate<void>
     }
 
     // Handles the back button when on the [ComposePage].
-    if (onCompose) {
-      // TODO: Add Container Transform from FAB to compose email page (Motion)
-      emailStore.onCompose = false;
-      return SynchronousFuture<bool>(false);
-    }
+    if (onCompose) return SynchronousFuture<bool>(false);
 
     // Handles the back button when the bottom drawer is visible on the
     // MailView. Dismisses the drawer on back button press.
@@ -102,4 +95,25 @@ class MailViewRouterDelegate extends RouterDelegate<void>
   }
 }
 
-// TODO: Add Fade through transition between mailbox pages (Motion)
+class FadeTroughTransitionPageWrapper extends Page {
+  FadeTroughTransitionPageWrapper({
+    @required this.mailbox,
+    @required this.transitionKey,
+  })  : assert(mailbox != null),
+        assert(transitionKey != null),
+        super(key: transitionKey);
+
+  final Widget mailbox;
+  final ValueKey transitionKey;
+
+  @override
+  Route createRoute(BuildContext context) => PageRouteBuilder(
+      settings: this,
+      transitionsBuilder: (_, animation, secondaryAnimation, child) =>
+          FadeThroughTransition(
+              fillColor: Theme.of(context).scaffoldBackgroundColor,
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              child: child),
+      pageBuilder: (_, __, ___) => mailbox);
+}
