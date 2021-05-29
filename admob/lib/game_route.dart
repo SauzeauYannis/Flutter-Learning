@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// TODO: Import ad_helper.dart
-
-// TODO: Import google_mobile_ads.dart
-
+import 'package:awesome_drawing_quiz/ad_helper.dart';
 import 'package:awesome_drawing_quiz/app_theme.dart';
 import 'package:awesome_drawing_quiz/drawing.dart';
 import 'package:awesome_drawing_quiz/drawing_painter.dart';
 import 'package:awesome_drawing_quiz/quiz_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class GameRoute extends StatefulWidget {
   @override
@@ -34,9 +32,9 @@ class _GameRouteState extends State<GameRoute> implements QuizEventListener {
 
   late String _clue;
 
-  // TODO: Add _bannerAd
+  late BannerAd _bannerAd;
 
-  // TODO: Add _isBannerAdReady
+  bool _isBannerAdReady = false;
 
   // TODO: Add _interstitialAd
 
@@ -54,12 +52,25 @@ class _GameRouteState extends State<GameRoute> implements QuizEventListener {
       ..listener = this
       ..startGame();
 
-    // TODO: Initialize _bannerAd
+    _bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: AdHelper.bannerAdUnitId,
+      listener: BannerAdListener(
+        onAdLoaded: (_) => setState(() => _isBannerAdReady = true),
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          _isBannerAdReady = false;
+          ad.dispose();
+        },
+      ),
+      request: AdRequest(),
+    );
+
+    _bannerAd.load();
 
     // TODO: Initialize _interstitialAd
 
     // TODO: Initialize _rewardedAd
-
   }
 
   @override
@@ -158,7 +169,15 @@ class _GameRouteState extends State<GameRoute> implements QuizEventListener {
                 ],
               ),
             ),
-            // TODO: Display a banner when ready
+            if (_isBannerAdReady)
+              Align(
+                alignment: Alignment.topCenter,
+                child: Container(
+                  width: _bannerAd.size.width.toDouble(),
+                  height: _bannerAd.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd),
+                ),
+              ),
           ],
         ),
       ),
@@ -199,7 +218,7 @@ class _GameRouteState extends State<GameRoute> implements QuizEventListener {
 
   @override
   void dispose() {
-    // TODO: Dispose a BannerAd object
+    _bannerAd.dispose();
 
     // TODO: Dispose an InterstitialAd object
 
