@@ -36,9 +36,9 @@ class _GameRouteState extends State<GameRoute> implements QuizEventListener {
 
   bool _isBannerAdReady = false;
 
-  // TODO: Add _interstitialAd
+  late InterstitialAd _interstitialAd;
 
-  // TODO: Add _isInterstitialAdReady
+  bool _isInterstitialAdReady = false;
 
   // TODO: Add _rewardedAd
 
@@ -68,7 +68,21 @@ class _GameRouteState extends State<GameRoute> implements QuizEventListener {
 
     _bannerAd.load();
 
-    // TODO: Initialize _interstitialAd
+    InterstitialAd.load(
+      adUnitId: AdHelper.interstitialAdUnitId,
+      request: AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          _isInterstitialAdReady = true;
+        },
+        onAdFailedToLoad: (err) {
+          print('Failed to load an interstitial ad: ${err.message}');
+          _isInterstitialAdReady = false;
+          _interstitialAd.dispose();
+        },
+      ),
+    );
 
     // TODO: Initialize _rewardedAd
   }
@@ -220,7 +234,7 @@ class _GameRouteState extends State<GameRoute> implements QuizEventListener {
   void dispose() {
     _bannerAd.dispose();
 
-    // TODO: Dispose an InterstitialAd object
+    _interstitialAd.dispose();
 
     // TODO: Dispose a RewardedAd object
 
@@ -241,8 +255,6 @@ class _GameRouteState extends State<GameRoute> implements QuizEventListener {
       _drawing = drawing;
       _clue = clue;
     });
-
-    // TODO: Load an Interstitial Ad
   }
 
   @override
@@ -262,9 +274,14 @@ class _GameRouteState extends State<GameRoute> implements QuizEventListener {
             TextButton(
               child: Text('close'.toUpperCase()),
               onPressed: () {
-                // TODO: Display an Interstitial Ad
+                if (_isInterstitialAdReady) {
+                  _interstitialAd.fullScreenContentCallback = FullScreenContentCallback(
+                      onAdDismissedFullScreenContent: (_) => _moveToHome());
 
-                _moveToHome();
+                  _interstitialAd.show();
+                }
+                else
+                  _moveToHome();
               },
             ),
           ],
