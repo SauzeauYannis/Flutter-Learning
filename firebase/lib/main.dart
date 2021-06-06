@@ -1,6 +1,10 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import 'src/authentication.dart';
 import 'src/widgets.dart';
 
 void main() {
@@ -17,7 +21,7 @@ class App extends StatelessWidget {
               highlightColor: Colors.deepPurple,
             ),
         primarySwatch: Colors.deepPurple,
-        textTheme: GoogleFonts.robotoTextTheme(
+        textTheme: GoogleFonts.notoSansTextTheme(
           Theme.of(context).textTheme,
         ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -56,5 +60,90 @@ class HomePage extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class ApplicationState extends ChangeNotifier {
+  ApplicationState() {
+    init();
+  }
+
+  Future<void> init() async {
+    await Firebase.initializeApp();
+
+    FirebaseAuth.instance.userChanges().listen((user) {
+      user != null
+          ? _loginState = ApplicationLoginState.loggedIn
+          : _loginState = ApplicationLoginState.loggedOut;
+      notifyListeners();
+    });
+  }
+
+  ApplicationLoginState _loginState = ApplicationLoginState.loggedOut;
+
+  ApplicationLoginState get loginState => _loginState;
+
+  String? _email;
+
+  String? get email => _email;
+
+  void startLoginFlow() {
+    _loginState = ApplicationLoginState.emailAddress;
+    notifyListeners();
+  }
+
+  // ignore: avoid_void_async
+  void verifyEmail(
+    String email,
+    void Function(FirebaseAuthException e) errorCallback,
+  ) async {
+    try {
+      var methods =
+          await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
+      _loginState = methods.contains('password')
+          ? ApplicationLoginState.password
+          : ApplicationLoginState.register;
+      _email = email;
+      notifyListeners();
+    } on FirebaseAuthException catch (e) {
+      errorCallback(e);
+    }
+  }
+
+  // ignore: avoid_void_async
+  void signInWithEmailAndPassword(
+    String email,
+    String password,
+    void Function(FirebaseAuthException e) errorCallback,
+  ) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
+      errorCallback(e);
+    }
+  }
+
+  void cancelRegistration() {
+    _loginState = ApplicationLoginState.emailAddress;
+    notifyListeners();
+  }
+
+  // ignore: avoid_void_async
+  void registerAccount(String email, String name, String password,
+      void Function(FirebaseAuthException e) errorCallback) async {
+    try {
+      var credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      await credential.user!.updateDisplayName(name);
+    } on FirebaseAuthException catch (e) {
+      errorCallback(e);
+    }
+  }
+
+  void signOut() {
+    FirebaseAuth.instance.signOut();
   }
 }
