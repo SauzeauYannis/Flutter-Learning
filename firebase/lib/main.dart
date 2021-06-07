@@ -1,14 +1,20 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'src/authentication.dart';
+import 'src/authentication.dart';
 import 'src/widgets.dart';
 
 void main() {
-  runApp(App());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ApplicationState(),
+      builder: (_, __) => App(),
+    ),
+  );
 }
 
 class App extends StatelessWidget {
@@ -46,6 +52,18 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 8),
           const IconAndDetail(Icons.calendar_today, 'October 30'),
           const IconAndDetail(Icons.location_city, 'San Francisco'),
+          Consumer<ApplicationState>(
+            builder: (_, appState, __) => Authentication(
+              loginState: appState.loginState,
+              email: appState.email,
+              startLoginFlow: appState.startLoginFlow,
+              verifyEmail: appState.verifyEmail,
+              signInWithEmailAndPassword: appState.signInWithEmailAndPassword,
+              cancelRegistration: appState.cancelRegistration,
+              registerAccount: appState.registerAccount,
+              signOut: appState.signOut,
+            ),
+          ),
           const Divider(
             height: 8,
             thickness: 1,
