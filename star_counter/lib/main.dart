@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:star_counter/star_counter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(StarCounterApp());
@@ -13,7 +14,7 @@ class StarCounterApp extends StatelessWidget {
         brightness: Brightness.light,
       ),
       routes: {
-        '/': (context) => HomePage(),
+        '/': (_) => HomePage(),
       },
     );
   }
@@ -61,6 +62,19 @@ class _HomePageState extends State<HomePage> {
                       repositoryName: _repositoryName,
                     ),
                   ),
+                  TextButton(
+                    style: ButtonStyle(
+                      foregroundColor: MaterialStateProperty.all(Colors.blue),
+                      overlayColor:
+                          MaterialStateProperty.all(Colors.transparent),
+                    ),
+                    onPressed: () => launch(
+                      'privacy_policy.html',
+                      enableJavaScript: true,
+                      enableDomStorage: true,
+                    ),
+                    child: Text('Privacy Policy'),
+                  )
                 ],
               ),
             ),
