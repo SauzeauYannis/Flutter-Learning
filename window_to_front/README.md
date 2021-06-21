@@ -1,4 +1,4 @@
-# Windows App that uses the GitHub GraphQL API
+# Plugin for the Windows App that uses the GitHub GraphQL API
 
 ## Codelab used
 
